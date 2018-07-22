@@ -32,6 +32,7 @@
       )))
 
 (defn draw-cats [origin-cats] 
+  (q/fill 0 0 255)
   (loop [cats origin-cats]
     (cond 
       (empty? cats) nil
@@ -41,11 +42,22 @@
               )
     )))
 
+(defn draw-rats [origin-rats] 
+  (q/fill 255 0 0)
+  (loop [rats origin-rats]
+    (cond 
+      (empty? rats) nil
+      :else (do 
+              (q/ellipse (:x (first rats)) (:y (first rats)) r r)
+              (recur (rest rats))
+              )
+    )))
+
 (defn setup []
   ; Set frame rate to 30 frames per second.
   (q/frame-rate 30)
   ; Set color mode to HSB (HSV) instead of default RGB.
-  (q/color-mode :hsb)
+  (q/color-mode :rgb)
   ; setup function returns initial state. It contains
   ; circle color and position.
   {:color 0
@@ -67,9 +79,11 @@
   ; Clear the sketch by filling it with light-grey color.
   (q/background 240)
   ; Set circle color.
-  (q/fill (:color state) 255 255)
+  ;(q/fill (:color state) 255 255)
   ; Calculate x and y coordinates of the circle.
-  (draw-cats (:cats state)))
+  ;(draw-cats (:cats state))
+  (draw-rats (:rats state))
+  )
 
 
 (defn -main [& args]
