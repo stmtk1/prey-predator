@@ -4,52 +4,49 @@
   )
 
 (def r 10)
+(def cat-slow-speed 10)
 
-(defn new-cat [] 
-  {:x (q/random r (- (q/width) r))
+(defn new-animal [] 
+  (let [theta (q/random 0 (* (Math/PI) 2))]
+  {
+   :x (q/random r (- (q/width) r))
    :y (q/random r (- (q/height) r))
-   })
+   }))
 
-(defn new-rat [] 
-  {:x (q/random r (- (q/width) r))
-   :y (q/random r (- (q/height) r))
-   })
+;(defn new-rat [] 
+;  {:x (q/random r (- (q/width) r))
+;   :y (q/random r (- (q/height) r))
+;   })
 
-(defn create-cats [n] 
+(defn new-cat [animal]
+  (assoc animal :chase true :color '(255 0 0)))
+
+(defn new-rat [animal]
+  (assoc animal :chase false :color '(0 0 255)))
+
+(defn create-animals [n] 
   (loop [i 0
-         cats []]
+         animals []]
     (cond 
-      (= i n) cats
-      :else (recur (+ i 1) (conj cats (new-cat)))
+      (= i n) animals
+      :else (recur (+ i 1) (conj animals (new-animal)))
       )))
 
-(defn create-rats [n] 
-  (loop [i 0
-         rats []]
-    (cond 
-      (= i n) rats
-      :else (recur (+ i 1) (conj rats (new-rat)))
-      )))
+(defn create-cats [n]
+   (map new-cat (create-animals n)))
 
-(defn draw-cats [origin-cats] 
+(defn create-rats [n]
+   (map new-rat (create-animals n)))
+
+(defn draw-animals [origin-animals] 
   (q/fill 0 0 255)
-  (loop [cats origin-cats]
-    (cond 
-      (empty? cats) nil
-      :else (do 
-              (q/ellipse (:x (first cats)) (:y (first cats)) r r)
-              (recur (rest cats))
-              )
-    )))
-
-(defn draw-rats [origin-rats] 
-  (q/fill 255 0 0)
-  (loop [rats origin-rats]
-    (cond 
-      (empty? rats) nil
-      :else (do 
-              (q/ellipse (:x (first rats)) (:y (first rats)) r r)
-              (recur (rest rats))
+  (loop [animals origin-animals]
+    (cond
+      (empty? animals) nil
+      :else (let [animal (first animals)]
+              (apply q/fill (:color animal))
+              (q/ellipse (:x animal) (:y animal) r r)
+              (recur (rest animals))
               )
     )))
 
@@ -60,8 +57,7 @@
   (q/color-mode :rgb)
   ; setup function returns initial state. It contains
   ; circle color and position.
-  {:color 0
-   :angle 0
+  {
    :cats (create-cats 100)
    :rats (create-rats 100)
    })
@@ -69,8 +65,7 @@
 (defn update-state [state]
   ; Update sketch state by changing circle color and position.
   ;{:color (((:color state)))
-  {:color (:color state)
-   :angle (+ (:angle state) 0.1)
+  {
    :cats (:cats state)
    :rats (:rats state)
    })
@@ -79,10 +74,9 @@
   ; Clear the sketch by filling it with light-grey color.
   (q/background 240)
   ; Set circle color.
-  ;(q/fill (:color state) 255 255)
   ; Calculate x and y coordinates of the circle.
-  ;(draw-cats (:cats state))
-  (draw-rats (:rats state))
+  (draw-animals (:cats state))
+  (draw-animals (:rats state))
   )
 
 
