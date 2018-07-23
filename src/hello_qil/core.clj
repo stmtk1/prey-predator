@@ -11,6 +11,8 @@
   {
    :x (q/random r (- (q/width) r))
    :y (q/random r (- (q/height) r))
+   :vx (Math/cos theta)
+   :vy (Math/sin theta)
    }))
 
 ;(defn new-rat [] 
@@ -50,6 +52,12 @@
               )
     )))
 
+(defn move [animal]
+  (conj animal 
+        {:x (+ (:x animal) (:vx animal))
+         :y (+ (:y animal) (:vy animal))}))
+
+
 (defn setup []
   ; Set frame rate to 30 frames per second.
   (q/frame-rate 30)
@@ -66,8 +74,8 @@
   ; Update sketch state by changing circle color and position.
   ;{:color (((:color state)))
   {
-   :cats (:cats state)
-   :rats (:rats state)
+   :cats (map #(move %) (:cats state))
+   :rats (map #(move %) (:rats state))
    })
 
 (defn draw-state [state]
