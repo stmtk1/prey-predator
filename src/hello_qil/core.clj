@@ -6,6 +6,9 @@
 (def r 10)
 (def cat-slow-speed 10)
 
+(defn set-pos [animal x y]
+  (assoc animal :x x :y y))
+
 (defn new-animal [] 
   (let [theta (q/random 0 (* (Math/PI) 2))]
   {
@@ -13,12 +16,8 @@
    :y (q/random r (- (q/height) r))
    :vx (Math/cos theta)
    :vy (Math/sin theta)
+   :visible 40
    }))
-
-;(defn new-rat [] 
-;  {:x (q/random r (- (q/width) r))
-;   :y (q/random r (- (q/height) r))
-;   })
 
 (defn new-cat [animal]
   (assoc animal :chase true :color '(255 0 0)))
@@ -52,11 +51,52 @@
               )
     )))
 
-(defn move [animal]
-  (conj animal 
-        {:x (+ (:x animal) (:vx animal))
-         :y (+ (:y animal) (:vy animal))}))
+(defn relative-pos [animal another]
+  {:x (- (:x another) (:x animal))
+   :y (- (:y another) (:y animal))})
 
+(defn dist [a1 a2]
+  (let [moved (relative-pos a1 a2)]
+  (Math/sqrt 
+    (+
+     (* (:x moved) (:x moved))
+     (* (:y moved) (:y moved))
+     ;j(* (- (:x a1) (:x a2)) (- (:x a1) (:x a2)))
+     ;(* (- (:y a1) (:y a2)) (- (:y a1) (:y a2)))
+     ))))
+
+(defn select-near [animal others]
+  (filter #(< (dist animal %) (:visible animal)) others))
+
+(defn add-vectors [animals] 
+  {:x (reduce + (map #(:x %) animals))
+   :y (reduce + (map #(:y %) animals))})
+
+(defn size [vect]
+  (dist vect {:x 0 :y 0}))
+
+(defn normalize [vect]
+  (let [vsize (size vect)]
+    {:x (/ (:x vect) vsize)
+     :y (/ (:y vect) vsize)}))
+
+(defn to-vel [pos]
+  {:vx (:x pos)
+   :vy (:y pos)})
+
+(defn chase [a-cat rats]
+  (let [near (select-near a-cat rats)]
+    (if (< (count near) 1)
+      {
+         :vx (:vx a-cat)
+         :vy (:vy a-cat)
+       }
+      (->> near 
+           add-vectors
+           normalize
+           to-vel
+           )
+      )))
 
 (defn setup []
   ; Set frame rate to 30 frames per second.
@@ -69,6 +109,12 @@
    :cats (create-cats 100)
    :rats (create-rats 100)
    })
+
+(defn move [animal]
+  (conj animal 
+        {:x (+ (:x animal) (:vx animal))
+         :y (+ (:y animal) (:vy animal))}))
+
 
 (defn update-state [state]
   ; Update sketch state by changing circle color and position.
